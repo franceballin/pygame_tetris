@@ -15,7 +15,7 @@ pygame.display.set_caption("Tetris 2077")
 game = Game()
 board = Board()
 input_handler = InputHandler()
-shape = Shape(100, 0)
+shape = Shape(100, 50)
 
 # Основной игровой цикл
 running = True
@@ -24,13 +24,14 @@ while running:
     clock.tick(FPS)
 
     input_handler.check_events()
-    move_left, move_right = input_handler.handle_input()
+    move_left, move_right, move_down = input_handler.handle_input()
 
     if move_left:
         shape.move(-1)
     elif move_right:
         shape.move(1)
-
+    elif move_down:
+        shape.move_down()
     shape.update()
 
     screen.fill((0, 0, 0))
