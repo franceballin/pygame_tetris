@@ -118,6 +118,25 @@ figures = {'S': [['ooooo',
                   'ooooo']]}
 
 
+class Jack(pg.sprite.Sprite):
+    def __init__(self, position, animation_speed):
+        image_paths = ['anim_assets/1.png', 'anim_assets/1.png', 'anim_assets/1.png', 'anim_assets/1.png', 'anim_assets/3.png']
+        super().__init__()
+        self.frames = [pg.image.load(path).convert_alpha() for path in image_paths]
+        self.current_frame = 0
+        self.image = self.frames[self.current_frame]
+        self.rect = self.image.get_rect(topleft=position)
+        self.animation_speed = animation_speed
+        self.last_update = pg.time.get_ticks()
+
+    def update(self):
+        now = pg.time.get_ticks()
+        if now - self.last_update > self.animation_speed:
+            self.last_update = now
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.image = self.frames[self.current_frame]
+
+
 def pauseScreen():
     pause = pg.Surface((600, 500), pg.SRCALPHA)
     pause.fill((30, 30, 122, 127))
@@ -145,7 +164,6 @@ def runTetris():
     last_move_down = time.time()
     last_side_move = time.time()
     last_fall = time.time()
-    last_blink = time.time()
     going_down = False
     going_left = False
     going_right = False
@@ -153,14 +171,15 @@ def runTetris():
     level, fall_speed = calcSpeed(points)
     fallingFig = getNewFig()
     nextFig = getNewFig()
-    jack = [pg.image.load('anim_assets/1.png'), pg.image.load('anim_assets/3.png')]
+
+    jack = Jack(position=(425, 360), animation_speed=1000)
+    jack_emos = pg.sprite.Group(jack)
 
     sound1 = pg.mixer.Sound('sounds/rotate.wav')
     sound1.set_volume(0.25)
 
     pg.mixer.music.load('sounds/repkis_loop.wav')
     pg.mixer.music.play(loops=-1)
-
 
     while True:
         pg.mixer.music.unpause()
@@ -226,7 +245,7 @@ def runTetris():
                     for i in range(1, cup_h):
                         if not checkPos(cup, fallingFig, adjY=i):
                             break
-                    fallingFig['y'] += i - 1
+                        fallingFig['y'] += i - 1
 
         # управление падением фигуры при удержании клавиш
         if (going_left or going_right) and time.time() - last_side_move > side_freq:
@@ -252,19 +271,14 @@ def runTetris():
                 fallingFig['y'] += 1
                 last_fall = time.time()
 
-        if time.time() - last_blink > 5.0:
-            display_surf.blit(jack[1], (440, 350))
-
-
         # рисуем окно игры со всеми надписями
+        jack_emos.update()
         display_surf.fill(bg_color)
         drawTitle()
         gamecup(cup)
         drawInfo(points, level)
+        jack_emos.draw(display_surf)
         drawnextFig(nextFig)
-        idle = pg.image.load('anim_assets/1.png').convert_alpha()
-        nidle = pg.transform.scale(idle, (125, 125))
-        display_surf.blit(nidle, (440, 350))
         if fallingFig != None:
             drawFig(fallingFig)
         pg.display.update()
