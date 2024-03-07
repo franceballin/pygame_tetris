@@ -172,7 +172,7 @@ def runTetris():
     fallingFig = getNewFig()
     nextFig = getNewFig()
 
-    jack = Jack(position=(425, 360), animation_speed=1000)
+    jack = Jack(position=(430, 350), animation_speed=1000)
     jack_emos = pg.sprite.Group(jack)
 
     sound1 = pg.mixer.Sound('sounds/rotate.wav')
